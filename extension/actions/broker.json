@@ -1,0 +1,7 @@
+{
+    "name": "com.nativemessaging.test",
+    "description": "send message from chrome extension to desktop app",
+    "path": "C:\\work\\testextension\\broker\\bin\\release\\net9.0\\broker.exe",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://imdffoaaahkicmgkbemnkafbjldincjo/"]
+}

@@ -1,0 +1,17 @@
+C:\work\testextension\broker\bin\release\net9.0\broker.exe
+C:\work\testextension\broker\bin\release\net9.0\broker.deps.json
+C:\work\testextension\broker\bin\release\net9.0\broker.runtimeconfig.json
+C:\work\testextension\broker\bin\release\net9.0\broker.dll
+C:\work\testextension\broker\bin\release\net9.0\broker.pdb
+C:\work\testextension\broker\bin\release\net9.0\Newtonsoft.Json.dll
+C:\work\testextension\broker\obj\release\net9.0\broker.csproj.AssemblyReference.cache
+C:\work\testextension\broker\obj\release\net9.0\broker.GeneratedMSBuildEditorConfig.editorconfig
+C:\work\testextension\broker\obj\release\net9.0\broker.AssemblyInfoInputs.cache
+C:\work\testextension\broker\obj\release\net9.0\broker.AssemblyInfo.cs
+C:\work\testextension\broker\obj\release\net9.0\broker.csproj.CoreCompileInputs.cache
+C:\work\testextension\broker\obj\release\net9.0\broker.csproj.Up2Date
+C:\work\testextension\broker\obj\release\net9.0\broker.dll
+C:\work\testextension\broker\obj\release\net9.0\refint\broker.dll
+C:\work\testextension\broker\obj\release\net9.0\broker.pdb
+C:\work\testextension\broker\obj\release\net9.0\broker.genruntimeconfig.cache
+C:\work\testextension\broker\obj\release\net9.0\ref\broker.dll

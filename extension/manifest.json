@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "nativemessaging",
+    "description": "send message from chrome extension to desktop app",
+    "version": "1.0.0",
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": {
+            "16": "icons/dollar.svg",
+            "32": "icons/dollar.svg",
+            "48": "icons/dollar.svg",
+            "128": "icons/dollar.svg"
+        }
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "permissions": ["nativeMessaging"],
+    "host_permissions": [],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"]
+        }
+    ]
+}
