@@ -5,45 +5,50 @@ document.addEventListener('DOMContentLoaded', () => {
   // Get references to DOM elements
   const sendButton = document.getElementById('sendButton');
   const resultDiv = document.getElementById('result');
+  const receiveDataDiv = document.getElementById('receive-data');
+  const inputValue = document.getElementById('send-data');
+
+  // Connect to the native messaging host when the popup opens
+  connectToNativeHost();
 
   // Add click event listener to the button
   sendButton.addEventListener('click', async () => {
     try {
-      // Example: Send a message to the background script
-      // const response = await sendMessageToBackground();
-      // resultDiv.textContent = JSON.stringify(response);
-      // resultDiv.style.display = 'block';
+      if (!port) {
+        connectToNativeHost();
+      }
 
-      const inputValue = document.getElementById('send-data');
-      resultDiv.textContent = `data sent: ${inputValue.value}`;
+      const message = inputValue.value;
+      resultDiv.textContent = `Data sent: ${message}`;
 
-      port = chrome.runtime.connectNative('com.nativemessaging.test');
-      port.onDisconnect.addListener(() => {
-        if (chrome.runtime.lastError) {
-          console.log(chrome.runtime.lastError);
-        }
-      });
-
+      // Send message to native host
+      port.postMessage({ text: message });
     } catch (error) {
       console.error('Error:', error);
       resultDiv.textContent = `Error: ${error.message}`;
-      resultDiv.style.display = 'block';
     }
   });
-});
 
-// Function to send a message to the background script
-// function sendMessageToBackground() {
-//   return new Promise((resolve, reject) => {
-//     chrome.runtime.sendMessage(
-//       { action: 'popupAction', data: 'Hello from popup' },
-//       (response) => {
-//         if (chrome.runtime.lastError) {
-//           reject(new Error(chrome.runtime.lastError.message));
-//         } else {
-//           resolve(response);
-//         }
-//       }
-//     );
-//   });
-// } 
+  function connectToNativeHost() {
+    try {
+      port = chrome.runtime.connectNative('com.nativemessaging.test');
+
+      port.onMessage.addListener((message) => {
+        console.log('Received message from native host:', message);
+        receiveDataDiv.textContent = JSON.stringify(message, null, 2);
+      });
+
+      port.onDisconnect.addListener(() => {
+        if (chrome.runtime.lastError) {
+          console.error('Connection error:', chrome.runtime.lastError);
+          receiveDataDiv.textContent = `Connection error: ${chrome.runtime.lastError.message}`;
+        }
+        port = null;
+      });
+    } catch (error) {
+      console.error('Failed to connect:', error);
+      receiveDataDiv.textContent = `Failed to connect: ${error.message}`;
+      port = null;
+    }
+  }
+}); 

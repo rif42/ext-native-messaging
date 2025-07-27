@@ -15,3 +15,4 @@ C:\work\testextension\broker\obj\release\net9.0\refint\broker.dll
 C:\work\testextension\broker\obj\release\net9.0\broker.pdb
 C:\work\testextension\broker\obj\release\net9.0\broker.genruntimeconfig.cache
 C:\work\testextension\broker\obj\release\net9.0\ref\broker.dll
+C:\work\testextension\broker\obj\release\net9.0\broker.sourcelink.json
