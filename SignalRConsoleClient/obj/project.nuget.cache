@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "5pUqQtZjLCs=",
+  "success": true,
+  "projectFilePath": "C:\\work\\testextension\\SignalRConsoleClient\\SignalRConsoleClient.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.aspnet.signalr.client\\2.4.3\\microsoft.aspnet.signalr.client.2.4.3.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\newtonsoft.json\\11.0.2\\newtonsoft.json.11.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

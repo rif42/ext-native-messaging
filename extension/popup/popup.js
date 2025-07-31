@@ -1,54 +1,38 @@
-let port = null;
+import * as signalR from '@microsoft/signalr';
 
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   // Get references to DOM elements
   const sendButton = document.getElementById('sendButton');
-  const resultDiv = document.getElementById('result');
+  // const resultDiv = document.getElementById('result');
   const receiveDataDiv = document.getElementById('receive-data');
   const inputValue = document.getElementById('send-data');
 
-  // Connect to the native messaging host when the popup opens
-  connectToNativeHost();
-
-  // Add click event listener to the button
   sendButton.addEventListener('click', async () => {
     try {
-      if (!port) {
-        connectToNativeHost();
-      }
-
-      const message = inputValue.value;
-      resultDiv.textContent = `Data sent: ${message}`;
-
-      // Send message to native host
-      port.postMessage({ text: message });
+      const conn = await initSignalR();
+      receiveDataDiv.textContent = JSON.stringify(`signalR connection established ${conn}`, null, 2);
+      await conn.invoke('SendMessage', 'Extension', inputValue.value);
     } catch (error) {
-      console.error('Error:', error);
-      resultDiv.textContent = `Error: ${error.message}`;
+
+      alert(error);
     }
   });
 
-  function connectToNativeHost() {
+  async function initSignalR() {
     try {
-      port = chrome.runtime.connectNative('com.nativemessaging.test');
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl(
+          'http://localhost:5000/chatHub'
+        )
+        .withAutomaticReconnect()
+        .build();
+      await connection.start();
+      return connection;
+    } catch (err) {
 
-      port.onMessage.addListener((message) => {
-        console.log('Received message from native host:', message);
-        receiveDataDiv.textContent = JSON.stringify(message, null, 2);
-      });
+      alert(err);
 
-      port.onDisconnect.addListener(() => {
-        if (chrome.runtime.lastError) {
-          console.error('Connection error:', chrome.runtime.lastError);
-          receiveDataDiv.textContent = `Connection error: ${chrome.runtime.lastError.message}`;
-        }
-        port = null;
-      });
-    } catch (error) {
-      console.error('Failed to connect:', error);
-      receiveDataDiv.textContent = `Failed to connect: ${error.message}`;
-      port = null;
     }
   }
 }); 

@@ -14,7 +14,12 @@ using System.IO.Pipes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
-
+using SignalRChat.Hubs;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Threading;
 
 namespace desktop;
 
@@ -23,11 +28,59 @@ namespace desktop;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private IHost? signalRHost;
+    private SignalRClient? signalRClient;
+    private const string SignalRUrl = "http://localhost:5000/chatHub";
+    
     public MainWindow()
     {
         InitializeComponent();
         StartNamedPipeServer();
+        StartSignalRHost();
+        InitializeSignalRClient();
     }
+
+    private async void InitializeSignalRClient()
+    {
+        // Wait a bit for the server to start
+        await Task.Delay(1000);
+        
+        signalRClient = new SignalRClient(SignalRUrl);
+        signalRClient.MessageReceived += (user, message) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                receiveTextBox.Text = $"{user}: {message}\n";
+            });
+        };
+        
+        try
+        {
+            await signalRClient.ConnectAsync();
+            MessageBox.Show("Connected to SignalR hub!");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to connect to SignalR hub: {ex.Message}");
+        }
+    }
+
+    private void StartSignalRHost()
+    {
+        Task.Run(() =>
+        {
+            signalRHost = CreateHostBuilder([]).Build();
+            signalRHost.Run();
+        });
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+                webBuilder.UseUrls("http://localhost:5000");
+            });
 
     private void StartNamedPipeServer()
     {
@@ -76,8 +129,35 @@ public partial class MainWindow : Window
         });
     }
 
-    void SendInput(object sender, RoutedEventArgs e)
+    async void SendInput(object sender, RoutedEventArgs e)
     {
-        Console.WriteLine(textInput.Text);
+        if (string.IsNullOrEmpty(textInput.Text))
+            return;
+            
+        if (signalRClient?.IsConnected == true)
+        {
+            try
+            {
+                await signalRClient.SendMessageAsync("WPF App", textInput.Text);
+                textInput.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error sending message: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine(textInput.Text);
+        }
+    }
+
+    protected override async void OnClosed(EventArgs e)
+    {
+        if (signalRClient != null)
+            await signalRClient.DisconnectAsync();
+            
+        signalRHost?.StopAsync().Wait();
+        base.OnClosed(e);
     }
 }
