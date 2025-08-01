@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
+using Microsoft.AspNetCore.SignalR;
 
 namespace desktop;
 
@@ -34,14 +35,33 @@ public partial class MainWindow : Window
 
     private const string BackendSignalRUrl = "http://localhost:5006/browser-hub";
 
+    // Add this field to your MainWindow class
+    private IHubContext<ChatHub> _hubContext;
+
     public MainWindow()
     {
         InitializeComponent();
+
+        // Subscribe to the ChatHub's MessageSent event
+        ChatHub.MessageSent += OnMessageSent;
+
         StartSignalRHost();
 
         // StartNamedPipeServer();
         // InitializeSignalRClient();
     }
+
+    // Handler for messages received from SignalR clients
+    private void OnMessageSent(string user, string message)
+    {
+        // Since this might be called from a background thread, use Dispatcher
+        Dispatcher.Invoke(() =>
+        {
+            receiveTextBox.Text = $"{user}: {message}";
+        });
+    }
+
+
 
     private async void InitializeSignalRClient()
     {
@@ -71,17 +91,19 @@ public partial class MainWindow : Window
     {
 
         Task.Run(async () =>
+    {
+        signalRHost = CreateHostBuilder([]).Build();
+        await signalRHost.StartAsync();
+
+        // Get the hub context right after starting the host
+        var scope = signalRHost.Services.CreateScope();
+        _hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ChatHub>>();
+
+        Dispatcher.Invoke(() =>
         {
-            signalRHost = CreateHostBuilder([]).Build();
-            await signalRHost.StartAsync();
-
-            Dispatcher.Invoke(() =>
-            {
-                statusTextBox.Text = "SignalR hub host created!";
-            });
-
-            // MessageBox.Show("SignalR hub host created!");
+            statusTextBox.Text = "SignalR hub host created!";
         });
+    });
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -139,35 +161,64 @@ public partial class MainWindow : Window
         });
     }
 
-    async void SendInput(object sender, RoutedEventArgs e)
+    async void SendInput(object sender, RoutedEventArgs e) // send data to chrome extension
     {
         if (string.IsNullOrEmpty(textInput.Text))
             return;
 
-        if (signalRClient?.IsConnected == true)
+        try
         {
-            try
+            // Get the hub context if it's not already set
+            if (_hubContext == null)
             {
-                await signalRClient.SendMessageAsync("WPF App", textInput.Text);
-                textInput.Clear();
+                var scope = signalRHost!.Services.CreateScope();
+                _hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ChatHub>>();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error sending message: {ex.Message}");
-            }
+
+            // This directly calls the "ReceiveMessage" method on all clients
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Desktop App", textInput.Text);
+            // TODO: this breaches encapsulation
+            textInput.Clear();
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine(textInput.Text);
+            statusTextBox.Text = ex.Message;
         }
+
+        // if (signalRClient?.IsConnected == true)
+        // {
+        //     try
+        //     {
+        //         await signalRClient.SendMessageAsync("WPF App", textInput.Text);
+        //         textInput.Clear();
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         MessageBox.Show($"Error sending message: {ex.Message}");
+        //     }
+        // }
+        // else
+        // {
+        //     Console.WriteLine(textInput.Text);
+        // }
     }
 
     protected override async void OnClosed(EventArgs e)
     {
+        // Unsubscribe from events
+        ChatHub.MessageSent -= OnMessageSent;
+
         if (signalRClient != null)
             await signalRClient.DisconnectAsync();
 
-        signalRHost?.StopAsync().Wait();
+        // Stop SignalR host properly
+        if (signalRHost != null)
+        {
+            await signalRHost.StopAsync();
+            await signalRHost.WaitForShutdownAsync(); // Important!
+        }
+
         base.OnClosed(e);
+        Application.Current.Shutdown();
     }
 }

@@ -9,5 +9,10 @@ namespace desktop;
 /// </summary>
 public partial class App : Application
 {
+    public App()
+    {
+        // Set shutdown mode to close when main window closes
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
+    }
 }
 
