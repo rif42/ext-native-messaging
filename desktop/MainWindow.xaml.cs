@@ -31,21 +31,23 @@ public partial class MainWindow : Window
     private IHost? signalRHost;
     private SignalRClient? signalRClient;
     private const string SignalRUrl = "http://localhost:5000/chatHub";
-    
+
+    private const string BackendSignalRUrl = "http://localhost:5006/browser-hub";
+
     public MainWindow()
     {
         InitializeComponent();
-        StartNamedPipeServer();
         StartSignalRHost();
-        InitializeSignalRClient();
+
+        // StartNamedPipeServer();
+        // InitializeSignalRClient();
     }
 
     private async void InitializeSignalRClient()
     {
         // Wait a bit for the server to start
-        await Task.Delay(1000);
-        
-        signalRClient = new SignalRClient(SignalRUrl);
+
+        signalRClient = new SignalRClient(BackendSignalRUrl);
         signalRClient.MessageReceived += (user, message) =>
         {
             Dispatcher.Invoke(() =>
@@ -53,11 +55,11 @@ public partial class MainWindow : Window
                 receiveTextBox.Text = $"{user}: {message}\n";
             });
         };
-        
+
         try
         {
             await signalRClient.ConnectAsync();
-            MessageBox.Show("Connected to SignalR hub!");
+            // MessageBox.Show("Connected to SignalR hub!");
         }
         catch (Exception ex)
         {
@@ -67,10 +69,18 @@ public partial class MainWindow : Window
 
     private void StartSignalRHost()
     {
-        Task.Run(() =>
+
+        Task.Run(async () =>
         {
             signalRHost = CreateHostBuilder([]).Build();
-            signalRHost.Run();
+            await signalRHost.StartAsync();
+
+            Dispatcher.Invoke(() =>
+            {
+                statusTextBox.Text = "SignalR hub host created!";
+            });
+
+            // MessageBox.Show("SignalR hub host created!");
         });
     }
 
@@ -90,10 +100,10 @@ public partial class MainWindow : Window
             {
                 using var server = new NamedPipeServerStream("MyPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Message);
                 server.WaitForConnection();
-                
+
                 using var sr = new StreamReader(server);
                 using var sw = new StreamWriter(server) { AutoFlush = true };
-                
+
                 string? msg = sr.ReadLine();
                 if (msg == null) continue;
 
@@ -108,11 +118,11 @@ public partial class MainWindow : Window
                     {
                         // Parse the incoming JSON
                         JObject jsonMsg = JObject.Parse(msg);
-                        
+
                         // Display the message in the UI
                         if (jsonMsg["message"] != null)
                         {
-                            receiveTextBox.Text = jsonMsg["message"].ToString();
+                            receiveTextBox.Text = jsonMsg["message"]?.ToString();
                         }
                         else
                         {
@@ -122,7 +132,7 @@ public partial class MainWindow : Window
                     catch (Exception ex)
                     {
                         // If not valid JSON, just show the raw message
-                        receiveTextBox.Text = msg;
+                        receiveTextBox.Text = ex.Message;
                     }
                 });
             }
@@ -133,7 +143,7 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(textInput.Text))
             return;
-            
+
         if (signalRClient?.IsConnected == true)
         {
             try
@@ -156,7 +166,7 @@ public partial class MainWindow : Window
     {
         if (signalRClient != null)
             await signalRClient.DisconnectAsync();
-            
+
         signalRHost?.StopAsync().Wait();
         base.OnClosed(e);
     }

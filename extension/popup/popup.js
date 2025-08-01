@@ -30,9 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await connection.start();
       return connection;
     } catch (err) {
-
       alert(err);
-
     }
   }
 }); 

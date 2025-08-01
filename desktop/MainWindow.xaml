@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:desktop"
         mc:Ignorable="d"
         Title="MainWindow"
-        Height="120"
+        Height="150"
         Width="350">
     <Grid>
         <TextBlock HorizontalAlignment="Left"
@@ -37,5 +37,11 @@
                    TextWrapping="Wrap"
                    VerticalAlignment="Top"
                    Text="receiveTextBox" />
+        <TextBlock HorizontalAlignment="Left"
+                   Name="statusTextBox"
+                   Margin="20,70,0,0"
+                   TextWrapping="Wrap"
+                   Text="Status: "
+                   VerticalAlignment="Top" />
     </Grid>
 </Window>
