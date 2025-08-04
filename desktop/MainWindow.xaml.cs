@@ -48,7 +48,7 @@ public partial class MainWindow : Window
         StartSignalRHost();
 
         // StartNamedPipeServer();
-        // InitializeSignalRClient();
+        InitializeSignalRClient();
     }
 
     // Handler for messages received from SignalR clients
@@ -79,7 +79,7 @@ public partial class MainWindow : Window
         try
         {
             await signalRClient.ConnectAsync();
-            // MessageBox.Show("Connected to SignalR hub!");
+            // statusTextBox.Text = $"connected to backend signalR {signalRClient}";
         }
         catch (Exception ex)
         {

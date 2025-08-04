@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SignalRConsoleClient")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d4832838c76c87e075f510bf7ef9a3f6f7d7ff4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b820d02c97619770280cbc1388098c4ae96758c")]
 [assembly: System.Reflection.AssemblyProductAttribute("SignalRConsoleClient")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SignalRConsoleClient")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
